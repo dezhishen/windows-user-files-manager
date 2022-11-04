@@ -1,6 +1,6 @@
 <script setup>
-import {reactive} from 'vue'
-import {Greet} from '../../wailsjs/go/main/App'
+import { reactive } from 'vue'
+import { Greet } from '../../wailsjs/go/application/App'
 
 const data = reactive({
   name: "",
@@ -19,7 +19,7 @@ function greet() {
   <main>
     <div id="result" class="result">{{ data.resultText }}</div>
     <div id="input" class="input-box">
-      <input id="name" v-model="data.name" autocomplete="off" class="input" type="text"/>
+      <input id="name" v-model="data.name" autocomplete="off" class="input" type="text" />
       <button class="btn" @click="greet">Greet</button>
     </div>
   </main>

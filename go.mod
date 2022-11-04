@@ -1,4 +1,4 @@
-module changeme
+module github.com/dezhishen/windows-user-files-manager
 
 go 1.18
 
