@@ -5,4 +5,6 @@ import {context} from '../models';
 
 export function GetAllDir():Promise<Array<fileutil.Dir>>;
 
+export function GetByRootpath(arg1:string):Promise<Array<fileutil.Dir>>;
+
 export function Startup(arg1:context.Context):Promise<void>;

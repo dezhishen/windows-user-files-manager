@@ -6,6 +6,10 @@ export function GetAllDir() {
   return window['go']['application']['FileApp']['GetAllDir']();
 }
 
+export function GetByRootpath(arg1) {
+  return window['go']['application']['FileApp']['GetByRootpath'](arg1);
+}
+
 export function Startup(arg1) {
   return window['go']['application']['FileApp']['Startup'](arg1);
 }

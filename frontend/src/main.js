@@ -1,6 +1,7 @@
 import {createApp} from 'vue'
 import App from './App.vue'
-import naive from 'naive-ui'
-const vueApp = createApp(App)
-vueApp.use(naive)
-vueApp.mount('#app')
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+const app = createApp(App)
+app.use(ElementPlus)
+app.mount('#app')

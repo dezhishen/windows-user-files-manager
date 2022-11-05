@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"log"
 
 	"github.com/dezhishen/windows-user-files-manager/pkg/fileutil"
 )
@@ -22,14 +23,20 @@ func (a *FileApp) Startup(ctx context.Context) {
 }
 
 // Greet returns a greeting for the given name
-func (a *FileApp) GetAllDir() []fileutil.Dir {
-	var result []fileutil.Dir
-	fileutil.ScanFile(
-		fileutil.GetUserDir(),
-		func(dir *fileutil.Dir) error {
-			result = append(result, *dir)
-			return nil
-		},
-	)
+func (a *FileApp) GetAllDir() []*fileutil.Dir {
+	result, err := fileutil.GetFile(fileutil.GetUserDir())
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return result
+}
+
+func (a *FileApp) GetByRootpath(rootpath string) []*fileutil.Dir {
+	result, err := fileutil.GetFile(rootpath)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
 	return result
 }
