@@ -20,6 +20,9 @@
                         <el-link v-if="!data.IsFile" type="primary" v-loading="data.opening" :icon="FolderOpened"
                             @click.stop="doOpen(data)">
                         </el-link>
+                        <el-link v-if="data.IsFile" type="primary" v-loading="data.closing" :icon="Edit"
+                            @click.stop="doOpen(data)">
+                        </el-link>
                         <el-link :icon="QuestionFilled" @click.stop="doQuestion(data)"></el-link>
                         <el-tooltip class="box-item" effect="dark" content="复制完整路径" placement="top">
                             <el-link type="primary" :icon="CopyDocument" @click.stop="doCopy(data)"></el-link>
@@ -46,7 +49,7 @@
 </template>
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { CopyDocument, Delete, Folder, FolderOpened, QuestionFilled } from '@element-plus/icons-vue'
+import { CopyDocument, Edit, Delete, Folder, FolderOpened, QuestionFilled } from '@element-plus/icons-vue'
 import { GetByRootpath, OpenfileByPath, DeletefileByPath } from '../../wailsjs/go/application/FileApp'
 import { BrowserOpenURL } from '../../wailsjs/runtime'
 import { ElButton, ElCol, ElIcon, ElInput, ElLink, ElPopover, ElRow, ElSpace, ElTooltip, ElTree } from 'element-plus'
