@@ -23,7 +23,7 @@ func main() {
 	// Create an instance of the app structure
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:     "windows-user-files-manager",
+		Title:     "文件管理工具",
 		Width:     1024,
 		Height:    768,
 		Assets:    assets,

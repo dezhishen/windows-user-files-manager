@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import FileApp from './components/FileApp.vue'
+import FileAppTab from './components/FileAppTab.vue'
 </script>
 
 <template>
-  <FileApp />
+  <FileAppTab />
 </template>

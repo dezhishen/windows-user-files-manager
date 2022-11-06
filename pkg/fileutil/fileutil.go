@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -8,6 +9,9 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	ps "github.com/bhendo/go-powershell"
+	"github.com/bhendo/go-powershell/backend"
 )
 
 type Dir struct {
@@ -118,4 +122,34 @@ func OpenfileByPath(path string) {
 		path = strings.ReplaceAll(path, "/", "\\")
 		exec.Command("explorer", path).Start()
 	}
+}
+
+func GetMyDocumentDir() string {
+	return getFolderPath("MyDocuments")
+}
+
+func GetDesktopDir() string {
+	return getFolderPath("Desktop")
+}
+
+func getFolderPath(str string) string {
+	back := &backend.Local{}
+	// 开启一个本地 powershell 进程
+	shell, err := ps.New(back)
+	if err != nil {
+		panic(err)
+	}
+	defer shell.Exit()
+
+	// ... 和它交互
+	cmd := fmt.Sprintf("[Environment]::GetFolderPath(\"%s\")", str)
+	stdout, _, err := shell.Execute(cmd)
+	if err != nil {
+		panic(err)
+	}
+	return strings.ReplaceAll(strings.TrimSpace(stdout), "\\", "\\\\")
+}
+
+func DeletefileByPath(path string) error {
+	return os.RemoveAll(path)
 }
