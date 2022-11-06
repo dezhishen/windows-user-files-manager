@@ -1,15 +1,12 @@
 <template>
     <div style="padding:10px">
         <el-row style="margin-bottom: 10px;">
-            <el-col :span="20">
+            <el-col :span="10">
                 <el-input v-model="filterText" placeholder="请输入根目录"></el-input>
             </el-col>
-            <el-col :span="4">
-                <el-button style="float:left" :icon="Search" circle @click="doFilter" />
-            </el-col>
         </el-row>
-        <el-tree style="width:100%;" ref="treeRef" :props="props" :data="dataSource" :filter-node-method="filterNode"
-            node-key="AbsolutePath" :load="loadNode" lazy>
+        <el-tree style="width:100%;" ref="treeRef" :props="props" :data="dataSource"
+            :filter-node-method="filterNodeMethod" node-key="Hashcode" lazy :load="loadNode">
             <template #default="{ data }" style="width:100%;">
                 <el-row style="width:100%;">
                     <el-space wrap :size="10">
@@ -17,13 +14,24 @@
                             <Document v-if="data.IsFile" />
                             <Folder v-else />
                         </el-icon>
-                        <el-tooltip class="box-item" effect="dark" :content="data.AbsolutePath" placement="top">
-                            <span class="ellipsis">{{ data.Name }}</span>
-                        </el-tooltip>
+                        <span class="ellipsis">{{ data.Name }}</span>
                     </el-space>
                     <el-space wrap :size="10" style="float:right">
-                        <el-link type="primary" :icon="CopyDocument" @click.stop="doCopy(data)"></el-link>
-                        <el-link type="danger" :icon="Delete" @click.stop="doDelete(data)"></el-link>
+                        <el-tooltip class="box-item" effect="dark" content="复制完整路径" placement="top">
+                            <el-link type="primary" :icon="CopyDocument" @click.stop="doCopy(data)"></el-link>
+                        </el-tooltip>
+                        <el-popover trigger="click" :visible="data.deleteVisible" placement="top" :width="160">
+                            <p>是否删除文件夹{{ data.Name }}</p>
+                            <div style="text-align: right; margin: 0">
+                                <el-button size="small" text @click.stop="data.deleteVisible = false">否
+                                </el-button>
+                                <el-button size="small" type="primary" @click.stop="doDelete(data)">是
+                                </el-button>
+                            </div>
+                            <template #reference>
+                                <el-link type="danger" :icon="Delete"></el-link>
+                            </template>
+                        </el-popover>
                     </el-space>
                 </el-row>
             </template>
@@ -31,18 +39,21 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { Search, CopyDocument, Delete } from '@element-plus/icons-vue'
+import { ref, watch } from 'vue'
+import { CopyDocument, Delete, Folder } from '@element-plus/icons-vue'
 import { GetByRootpath } from '../../wailsjs/go/application/FileApp'
+import { ElButton, ElCol, ElIcon, ElInput, ElLink, ElPopover, ElRow, ElSpace, ElTooltip, ElTree } from 'element-plus'
+import { FilterValue, TreeNodeData, FilterNodeMethodFunction } from 'element-plus/es/components/tree/src/tree.type';
+import * as TheNode from 'element-plus/es/components/tree/src/model/node';
 
-import { ElTree } from 'element-plus'
-interface FileInfo {
+interface FileTree extends TreeNodeData {
     Name: string
     AbsolutePath: string
     RelativePath: string
-    FileInfo: {}
-    Children?: FileInfo[]
+    Children?: FileTree[]
     IsFile: boolean
+    DeleteVisible: boolean
+    Hashcode: number
 }
 
 const props = {
@@ -54,20 +65,22 @@ const filterText = ref<string>('')
 
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
-const doFilter = () => {
-    treeRef.value!.filter(filterText.value)
+watch(filterText, (val) => {
+    doFilter(val)
+})
+
+const doFilter = (val: string) => {
+    treeRef.value!.filter(val)
 }
 
-const dataSource = ref<FileInfo[]>()
+const dataSource = ref<FileTree[]>()
 
-const filterNode = (value: string, data: FileInfo) => {
-    if (!value) return true
-    return data.Name === value
+const filterNodeMethod: FilterNodeMethodFunction = (value: FilterValue, data: TreeNodeData, child: TheNode.default) => {
+    return data.AbsolutePath.includes(value)
 }
 
-const doCopy = (data: FileInfo) => {
-    const text = data.AbsolutePath;
-    // 复制到剪贴板
+const doCopy = (data: FileTree) => {
+    const text = data.AbsolutePath
     navigator.clipboard.writeText(text).then(() => {
         console.log('复制成功')
     }, () => {
@@ -75,31 +88,33 @@ const doCopy = (data: FileInfo) => {
     })
 }
 
-const doPrint = (data: FileInfo) => {
+const doPrint = (data: FileTree) => {
     console.log("doPrint=>", data)
 }
-const doDelete = (data: FileInfo) => {
+const doDelete = (data: FileTree) => {
     console.log("doDelete=>", data)
+    data.deleteVisible = false
 }
 const getByRootpath = (rootpath: string) => {
-    GetByRootpath(rootpath).then((result: FileInfo[]) => {
+    dataSource.value = []
+    GetByRootpath(rootpath).then((result: FileTree[]) => {
         dataSource.value = result
     })
 }
 
 const loadNode = (node: any, resolve: any) => {
-    const data = node.data
-    if (data.Children) {
-        return resolve(data.Children)
+    if (node.data.Children){
+        resolve(node.data.Children)
+        return
     }
-    GetByRootpath(data.AbsolutePath).then((result: FileInfo[]) => {
+    GetByRootpath(node.data.AbsolutePath).then((result: FileTree[]) => {
         if (!result) {
             result = []
         }
         resolve(result)
     })
 }
-getByRootpath("")
+
 </script>
 <style >
 .ellipsis {

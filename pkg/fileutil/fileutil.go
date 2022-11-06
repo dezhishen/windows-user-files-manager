@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"hash/crc32"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,6 +16,7 @@ type Dir struct {
 	FileInfo     os.FileInfo
 	Children     []*Dir
 	IsFile       bool
+	Hashcode     int
 }
 
 func GetUserDir() string {
@@ -95,14 +97,28 @@ func GetFile(rootPath string) ([]*Dir, error) {
 	}
 	var result []*Dir
 	for _, fileInfo := range fileInfoList {
+		absolutePath := filepath.Join(rootPath, fileInfo.Name())
 		var dir = &Dir{
 			Name:         fileInfo.Name(),
-			AbsolutePath: filepath.Join(rootPath, fileInfo.Name()),
+			AbsolutePath: absolutePath,
 			RelativePath: getReltivePath(filepath.Join(rootPath, fileInfo.Name()), rootPath),
 			FileInfo:     fileInfo,
 			IsFile:       !fileInfo.IsDir(),
+			Hashcode:     hashcode(absolutePath),
 		}
 		result = append(result, dir)
 	}
 	return result, err
+}
+
+func hashcode(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
 }
