@@ -1,42 +1,24 @@
-<script>
-import { GetByRootpath } from '../../wailsjs/go/application/FileApp'
-export default {
-    name: "FileApp",
-    data() {
-        return {
-            data: [],
-            defaultProps: {
-                children: 'Children',
-                label: 'Name',
-                isLeaf: "IsFile"
-            }
-        }
-    },
-    methods: {
-        getAllDir() {
-            GetByRootpath("").then(res => {
-                this.data = res
-            })
-        },
-        loadNode: (node, resolve) => {
-            GetByRootpath(node.data.AbsolutePath).then(res => {
-                if (!res) {
-                    res = []
-                }
-                resolve(res)
-            }).catch(err => {
-                console.log("err", err)
-            })
-        },
-        handleNodeClick: (node) => {
-            console.log(node)
-        }
-    }
-}
-</script>
 <template>
-    <div>
-        <el-button type="primary" @click="getAllDir">Click me</el-button>
-        <el-tree :data="data" lazy :load="loadNode" :props="defaultProps" />
-    </div>
+    <el-tree :data="dataSource" show-checkbox node-key="id" default-expand-all :expand-on-click-node="false">
+        <template #default="{ node, data }">
+            <span class="custom-tree-node">
+                <span>{{ node.label }}</span>
+                <span>
+                    操作对象
+                </span>
+            </span>
+        </template>
+    </el-tree>
 </template>
+<script lang="ts" setup>
+import { ref } from 'vue'
+interface FileInfo {
+    Name: string
+    AbsolutePath: string
+    RelativePath: string
+    FileInfo: {}
+    Children?: FileInfo[]
+    IsFile: boolean
+}
+const dataSource = ref<FileInfo[]>()
+</script>
