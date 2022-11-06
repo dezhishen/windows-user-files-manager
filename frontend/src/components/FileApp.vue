@@ -6,7 +6,7 @@
             </el-col>
         </el-row>
         <el-tree style="width:100%;" ref="treeRef" :props="props" :data="dataSource"
-            :filter-node-method="filterNodeMethod" node-key="Hashcode" lazy :load="loadNode">
+            :filter-node-method="filterNodeMethod" node-key="AbsolutePath" lazy :load="loadNode">
             <template #default="{ data }" style="width:100%;">
                 <el-row style="width:100%;">
                     <el-space wrap :size="10">
@@ -17,6 +17,9 @@
                         <span class="ellipsis">{{ data.Name }}</span>
                     </el-space>
                     <el-space wrap :size="10" style="float:right">
+                        <el-link v-if="!data.IsFile" type="primary" v-loading="data.opening" :icon="FolderOpened"
+                            @click.stop="doOpen(data)">
+                        </el-link>
                         <el-tooltip class="box-item" effect="dark" content="复制完整路径" placement="top">
                             <el-link type="primary" :icon="CopyDocument" @click.stop="doCopy(data)"></el-link>
                         </el-tooltip>
@@ -40,8 +43,8 @@
 </template>
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { CopyDocument, Delete, Folder } from '@element-plus/icons-vue'
-import { GetByRootpath } from '../../wailsjs/go/application/FileApp'
+import { CopyDocument, Delete, Folder, FolderOpened } from '@element-plus/icons-vue'
+import { GetByRootpath, OpenfileByPath } from '../../wailsjs/go/application/FileApp'
 import { ElButton, ElCol, ElIcon, ElInput, ElLink, ElPopover, ElRow, ElSpace, ElTooltip, ElTree } from 'element-plus'
 import { FilterValue, TreeNodeData, FilterNodeMethodFunction } from 'element-plus/es/components/tree/src/tree.type';
 import * as TheNode from 'element-plus/es/components/tree/src/model/node';
@@ -53,7 +56,7 @@ interface FileTree extends TreeNodeData {
     Children?: FileTree[]
     IsFile: boolean
     DeleteVisible: boolean
-    Hashcode: number
+    opening: boolean
 }
 
 const props = {
@@ -73,10 +76,23 @@ const doFilter = (val: string) => {
     treeRef.value!.filter(val)
 }
 
+
 const dataSource = ref<FileTree[]>()
 
 const filterNodeMethod: FilterNodeMethodFunction = (value: FilterValue, data: TreeNodeData, child: TheNode.default) => {
     return data.AbsolutePath.includes(value)
+}
+
+const doOpen = (data: FileTree) => {
+    console.log(data.opening)
+    if (data.opening) {
+        return
+    }
+    data.opening = true
+    OpenfileByPath(data.AbsolutePath)
+    setTimeout(() => {
+        data.opening = false
+    }, 1000)
 }
 
 const doCopy = (data: FileTree) => {
@@ -103,7 +119,7 @@ const getByRootpath = (rootpath: string) => {
 }
 
 const loadNode = (node: any, resolve: any) => {
-    if (node.data.Children){
+    if (node.data.Children) {
         resolve(node.data.Children)
         return
     }

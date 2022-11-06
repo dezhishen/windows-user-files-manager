@@ -7,4 +7,6 @@ export function GetAllDir():Promise<Array<fileutil.Dir>>;
 
 export function GetByRootpath(arg1:string):Promise<Array<fileutil.Dir>>;
 
+export function OpenfileByPath(arg1:string):Promise<void>;
+
 export function Startup(arg1:context.Context):Promise<void>;

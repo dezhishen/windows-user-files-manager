@@ -40,3 +40,7 @@ func (a *FileApp) GetByRootpath(rootpath string) []*fileutil.Dir {
 	}
 	return result
 }
+
+func (a *FileApp) OpenfileByPath(path string) {
+	fileutil.OpenfileByPath(path)
+}

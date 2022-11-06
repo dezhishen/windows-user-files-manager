@@ -1,11 +1,12 @@
 package fileutil
 
 import (
-	"hash/crc32"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -16,7 +17,6 @@ type Dir struct {
 	FileInfo     os.FileInfo
 	Children     []*Dir
 	IsFile       bool
-	Hashcode     int
 }
 
 func GetUserDir() string {
@@ -104,21 +104,18 @@ func GetFile(rootPath string) ([]*Dir, error) {
 			RelativePath: getReltivePath(filepath.Join(rootPath, fileInfo.Name()), rootPath),
 			FileInfo:     fileInfo,
 			IsFile:       !fileInfo.IsDir(),
-			Hashcode:     hashcode(absolutePath),
 		}
 		result = append(result, dir)
 	}
 	return result, err
 }
 
-func hashcode(s string) int {
-	v := int(crc32.ChecksumIEEE([]byte(s)))
-	if v >= 0 {
-		return v
+func OpenfileByPath(path string) {
+	if runtime.GOOS == "darwin" {
+		cmd := `open "` + path + `"`
+		exec.Command("/bin/bash", "-c", cmd).Start()
+	} else {
+		path = strings.ReplaceAll(path, "/", "\\")
+		exec.Command("explorer", path).Start()
 	}
-	if -v >= 0 {
-		return -v
-	}
-	// v == MinInt
-	return 0
 }
