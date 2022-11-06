@@ -1,30 +1,29 @@
-<script lang="ts" setup>
-import {reactive} from 'vue'
-import {Greet} from '../../wailsjs/go/main/App'
-
-const data = reactive({
-  name: "",
-  resultText: "Please enter your name below 👇",
-})
-
-function greet() {
-  Greet(data.name).then(result => {
-    data.resultText = result
-  })
-}
-
-</script>
-
+<!-- 
 <template>
   <main>
     <div id="result" class="result">{{ data.resultText }}</div>
     <div id="input" class="input-box">
-      <input id="name" v-model="data.name" autocomplete="off" class="input" type="text"/>
+      <input id="name" v-model="data.name" autocomplete="off" class="input" type="text" />
       <button class="btn" @click="greet">Greet</button>
     </div>
   </main>
 </template>
 
+<script lang="ts" setup>
+import { reactive } from 'vue'
+import { GetByRootpath } from '../../wailsjs/go/application/FileApp'
+const data = reactive({
+  name: "",
+  resultText: "Please enter your name below 👇",
+})
+
+function getByRootpath(rootpath: string) {
+  GetByRootpath(rootpath).then((result: []) => {
+    data.resultText = result
+  })
+}
+
+</script>
 <style scoped>
 .result {
   height: 20px;
@@ -68,4 +67,4 @@ function greet() {
   border: none;
   background-color: rgba(255, 255, 255, 1);
 }
-</style>
+</style> -->
