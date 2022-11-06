@@ -74,6 +74,11 @@ const doAdd = () => {
 
 const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 'add') => {
     if (action === 'add') {
+        newRootpath.value = {
+            Name: '',
+            Label: '',
+            Rootpath: ''
+        }
         dialogVisible.value = true
     } else if (action === 'remove') {
         fileTabs.value = fileTabs.value.filter((tab) => tab.Name !== targetName)
