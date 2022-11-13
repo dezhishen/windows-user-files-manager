@@ -26,6 +26,8 @@ func (app *FileApp) Startup(ctx context.Context) {
 
 func (app *FileApp) Close(ctx context.Context) {}
 
+func (app *FileApp) Shutdown(ctx context.Context) {}
+
 // Greet returns a greeting for the given name
 func (app *FileApp) GetAllDir() []*fileutil.Dir {
 	result, err := fileutil.GetFile(fileutil.GetUserDir())

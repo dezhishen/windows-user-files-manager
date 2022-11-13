@@ -19,7 +19,10 @@ func start(ctx context.Context) {
 
 func close(ctx context.Context) bool {
 	return application.Close(ctx)
+}
 
+func shutdown(ctx context.Context) {
+	application.Shutdown(ctx)
 }
 
 func getBinds() []interface{} {
@@ -40,6 +43,7 @@ func main() {
 		Height:        768,
 		Assets:        assets,
 		OnStartup:     start,
+		OnShutdown:    shutdown,
 		OnBeforeClose: close,
 		Bind:          getBinds(),
 	})

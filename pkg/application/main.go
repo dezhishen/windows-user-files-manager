@@ -5,6 +5,7 @@ import "context"
 type applicationInterface interface {
 	Startup(ctx context.Context)
 	Close(ctx context.Context)
+	Shutdown(ctx context.Context)
 }
 
 var binds []applicationInterface
@@ -23,9 +24,15 @@ func Startup(ctx context.Context) {
 	}
 }
 
+func Shutdown(ctx context.Context) {
+	for _, app := range binds {
+		app.Shutdown(ctx)
+	}
+}
+
 func Close(ctx context.Context) bool {
 	for _, app := range binds {
 		app.Close(ctx)
 	}
-	return true
+	return false
 }

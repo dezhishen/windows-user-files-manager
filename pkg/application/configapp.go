@@ -25,6 +25,9 @@ func (app *ConfigApp) Startup(ctx context.Context) {
 }
 
 func (app *ConfigApp) Close(ctx context.Context) {
+}
+
+func (app *ConfigApp) Shutdown(ctx context.Context) {
 	config.Unlock()
 }
 
