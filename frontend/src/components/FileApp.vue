@@ -1,5 +1,5 @@
 <template>
-    <div style="padding:10px">
+    <div>
         <el-row style="margin-bottom: 10px;">
             <el-col :span="10">
                 <el-input v-model="filterText" placeholder="请输入"></el-input>
@@ -55,10 +55,22 @@ import { BrowserOpenURL } from '../../wailsjs/runtime'
 import { ElButton, ElCol, ElIcon, ElInput, ElLink, ElPopover, ElRow, ElSpace, ElTooltip, ElTree } from 'element-plus'
 import { FilterValue, TreeNodeData, FilterNodeMethodFunction } from 'element-plus/es/components/tree/src/tree.type';
 import * as TheNode from 'element-plus/es/components/tree/src/model/node';
-
 const props = defineProps({
-    rootPath: String
+    rootPath: String,
 })
+
+const rootResolve = ref<Function>()
+
+const refresh = () => {
+    GetByRootpath(props.rootPath!).then((result: FileTree[]) => {
+        if (!result) {
+            result = []
+        }
+        dataSource.value = result
+    })
+}
+
+defineExpose({ refresh })
 
 interface FileTree extends TreeNodeData {
     Name: string
@@ -66,6 +78,7 @@ interface FileTree extends TreeNodeData {
     RelativePath: string
     Children?: FileTree[]
     IsFile: boolean
+    IsHidden: boolean
     DeleteVisible: boolean
     opening: boolean
 }
@@ -75,6 +88,7 @@ const treeProps = {
     children: 'Children',
     isLeaf: 'IsFile',
 }
+
 const filterText = ref<string>('')
 
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -83,10 +97,11 @@ watch(filterText, (val) => {
     doFilter(val)
 })
 
-const doFilter = (val: string) => {
-    treeRef.value!.filter(val)
+const doFilter = (val: string | null | undefined) => {
+    if (treeRef.value) {
+        treeRef.value!.filter(val)
+    }
 }
-
 
 const dataSource = ref<FileTree[]>()
 
@@ -123,6 +138,7 @@ const doCopy = (data: FileTree) => {
 const doPrint = (data: FileTree) => {
     console.log("doPrint=>", data)
 }
+
 const doDelete = (data: FileTree) => {
     console.log("doDelete=>", data)
     DeletefileByPath(data.AbsolutePath).then(() => {
@@ -132,13 +148,14 @@ const doDelete = (data: FileTree) => {
         data.deleteVisible = false
     })
 }
-
 const loadNode = (node: any, resolve: any) => {
+    if (node.level === 0) {
+        rootResolve.value = resolve
+    }
     if (node.data.Children) {
         resolve(node.data.Children)
         return
     }
-    console.log("loadNode=>", node.data.AbsolutePath)
     let path = node.data.AbsolutePath
     if (!path) {
         path = props.rootPath

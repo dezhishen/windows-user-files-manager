@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/dezhishen/windows-user-files-manager/pkg/config"
 	"github.com/dezhishen/windows-user-files-manager/pkg/fileutil"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -19,12 +20,14 @@ func NewFileApp() *FileApp {
 
 // Startup is called when the app starts. The context is saved
 // so we can call the runtime methods
-func (a *FileApp) Startup(ctx context.Context) {
-	a.ctx = ctx
+func (app *FileApp) Startup(ctx context.Context) {
+	app.ctx = ctx
 }
 
+func (app *FileApp) Close(ctx context.Context) {}
+
 // Greet returns a greeting for the given name
-func (a *FileApp) GetAllDir() []*fileutil.Dir {
+func (app *FileApp) GetAllDir() []*fileutil.Dir {
 	result, err := fileutil.GetFile(fileutil.GetUserDir())
 	if err != nil {
 		log.Println(err)
@@ -33,7 +36,7 @@ func (a *FileApp) GetAllDir() []*fileutil.Dir {
 	return result
 }
 
-func (a *FileApp) GetByRootpath(rootpath string) []*fileutil.Dir {
+func (app *FileApp) GetByRootpath(rootpath string) []*fileutil.Dir {
 	result, err := fileutil.GetFile(rootpath)
 	if err != nil {
 		log.Println(err)
@@ -42,12 +45,21 @@ func (a *FileApp) GetByRootpath(rootpath string) []*fileutil.Dir {
 	return result
 }
 
-func (a *FileApp) OpenfileByPath(path string) {
+func (app *FileApp) OpenfileByPath(path string) {
 	fileutil.OpenfileByPath(path)
 }
 
-func (a *FileApp) DeletefileByPath(path string) {
-	fileutil.DeletefileByPath(path)
+func (app *FileApp) DeletefileByPath(path string) {
+	val, _ := config.GetConfigValue("DeleteToRecycleBin")
+	if val != "false" {
+		fileutil.MoveAll2Trash(path)
+	} else {
+		fileutil.DeletefileByPath(path)
+	}
+}
+
+func (app *FileApp) RemoveAll2Trash(path string) {
+	fileutil.MoveAll2Trash(path)
 }
 
 type RootpathInfo struct {
@@ -56,7 +68,11 @@ type RootpathInfo struct {
 	Rootpath string
 }
 
-func (a *FileApp) GetByRootpaths() []*RootpathInfo {
+func init() {
+	AddApp(NewFileApp())
+}
+
+func (app *FileApp) GetByRootpaths() []*RootpathInfo {
 	var result []*RootpathInfo
 	result = append(result, &RootpathInfo{
 		Name:     "userfile",
@@ -76,8 +92,8 @@ func (a *FileApp) GetByRootpaths() []*RootpathInfo {
 	return result
 }
 
-func (a *FileApp) OpenDirectoryDialog() string {
-	str, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{})
+func (app *FileApp) OpenDirectoryDialog() string {
+	str, err := runtime.OpenDirectoryDialog(app.ctx, runtime.OpenDialogOptions{})
 	if err != nil {
 		log.Println(err)
 		return ""

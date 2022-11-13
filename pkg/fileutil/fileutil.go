@@ -7,11 +7,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 
+	"github.com/Bios-Marcel/wastebasket"
 	ps "github.com/bhendo/go-powershell"
 	"github.com/bhendo/go-powershell/backend"
+	"github.com/dezhishen/windows-user-files-manager/pkg/config"
 )
 
 type Dir struct {
@@ -21,6 +25,7 @@ type Dir struct {
 	FileInfo     os.FileInfo
 	Children     []*Dir
 	IsFile       bool
+	IsHidden     bool
 }
 
 func GetUserDir() string {
@@ -46,6 +51,14 @@ func GetFileWithMaxDeep(maxDeep uint8, rootPath string) ([]*Dir, error) {
 			AbsolutePath: filepath.Join(rootPath, fileInfo.Name()),
 			RelativePath: getReltivePath(filepath.Join(rootPath, fileInfo.Name()), GetUserDir()),
 			FileInfo:     fileInfo,
+			IsFile:       !fileInfo.IsDir(),
+			IsHidden:     CheckIsHidden(fileInfo),
+		}
+		value, _ := config.GetConfigValue("ShowHiddenFile")
+		if value != "true" {
+			if dir.IsHidden {
+				continue
+			}
 		}
 		if fileInfo.IsDir() {
 			children, err := getFileWithMaxDeep(deep+1, maxDeep, dir.AbsolutePath)
@@ -76,6 +89,14 @@ func getFileWithMaxDeep(deep, maxDeep uint8, rootPath string) ([]*Dir, error) {
 			AbsolutePath: filepath.Join(rootPath, fileInfo.Name()),
 			RelativePath: getReltivePath(filepath.Join(rootPath, fileInfo.Name()), GetUserDir()),
 			FileInfo:     fileInfo,
+			IsFile:       !fileInfo.IsDir(),
+			IsHidden:     CheckIsHidden(fileInfo),
+		}
+		value, _ := config.GetConfigValue("ShowHiddenFile")
+		if value != "true" {
+			if dir.IsHidden {
+				continue
+			}
 		}
 		if fileInfo.IsDir() {
 			children, err := getFileWithMaxDeep(deep+1, maxDeep, dir.AbsolutePath)
@@ -108,6 +129,13 @@ func GetFile(rootPath string) ([]*Dir, error) {
 			RelativePath: getReltivePath(filepath.Join(rootPath, fileInfo.Name()), rootPath),
 			FileInfo:     fileInfo,
 			IsFile:       !fileInfo.IsDir(),
+			IsHidden:     CheckIsHidden(fileInfo),
+		}
+		value, _ := config.GetConfigValue("ShowHidden")
+		if value != "true" {
+			if dir.IsHidden {
+				continue
+			}
 		}
 		result = append(result, dir)
 	}
@@ -140,7 +168,6 @@ func getFolderPath(str string) string {
 		panic(err)
 	}
 	defer shell.Exit()
-
 	// ... 和它交互
 	cmd := fmt.Sprintf("[Environment]::GetFolderPath(\"%s\")", str)
 	stdout, _, err := shell.Execute(cmd)
@@ -152,4 +179,16 @@ func getFolderPath(str string) string {
 
 func DeletefileByPath(path string) error {
 	return os.RemoveAll(path)
+}
+
+func MoveAll2Trash(path string) error {
+	wastebasket.Trash(path)
+	return nil
+}
+
+func CheckIsHidden(file os.FileInfo) bool {
+	//"通过反射来获取Win32FileAttributeData的FileAttributes
+	fa := reflect.ValueOf(file.Sys()).Elem().FieldByName("FileAttributes").Uint()
+	bytefa := []byte(strconv.FormatUint(fa, 2))
+	return bytefa[len(bytefa)-2] == '1'
 }

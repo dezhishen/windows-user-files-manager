@@ -11,26 +11,37 @@ import (
 
 //go:embed all:frontend/dist
 var assets embed.FS
-var app = application.NewApp()
 var fileApp = application.NewFileApp()
 
 func start(ctx context.Context) {
-	app.Startup(ctx)
-	fileApp.Startup(ctx)
+	application.Startup(ctx)
+}
+
+func close(ctx context.Context) bool {
+	return application.Close(ctx)
+
+}
+
+func getBinds() []interface{} {
+	apps := application.GetApps()
+	binds := make([]interface{}, len(apps))
+	for i, app := range apps {
+		binds[i] = app
+	}
+	return binds
 }
 
 func main() {
 	// Create an instance of the app structure
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:     "文件管理工具",
-		Width:     1024,
-		Height:    768,
-		Assets:    assets,
-		OnStartup: start,
-		Bind: []interface{}{
-			app, fileApp,
-		},
+		Title:         "文件管理工具",
+		Width:         1024,
+		Height:        768,
+		Assets:        assets,
+		OnStartup:     start,
+		OnBeforeClose: close,
+		Bind:          getBinds(),
 	})
 
 	if err != nil {
