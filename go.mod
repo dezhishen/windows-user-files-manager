@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	git.mills.io/prologic/bitcask v1.0.2
-	github.com/Bios-Marcel/wastebasket v0.0.0-20220303211447-66c8977d7e8c
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e
 	github.com/wailsapp/wails/v2 v2.0.0
 )

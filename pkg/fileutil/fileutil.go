@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Bios-Marcel/wastebasket"
 	ps "github.com/bhendo/go-powershell"
 	"github.com/bhendo/go-powershell/backend"
 	"github.com/dezhishen/windows-user-files-manager/pkg/config"
@@ -182,8 +181,21 @@ func DeletefileByPath(path string) error {
 }
 
 func MoveAll2Trash(path string) error {
-	wastebasket.Trash(path)
-	return nil
+	file, fileError := os.Stat(path)
+	if os.IsNotExist(fileError) {
+		return nil
+	}
+	if fileError != nil {
+		return fileError
+	}
+	psCommand := ""
+	if file.IsDir() {
+		psCommand = fmt.Sprintf("Add-Type -AssemblyName Microsoft.VisualBasic;[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory('%s', 'OnlyErrorDialogs','SendToRecycleBin')", path)
+	} else {
+		psCommand = fmt.Sprintf("Add-Type -AssemblyName Microsoft.VisualBasic;[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile('%s', 'OnlyErrorDialogs','SendToRecycleBin')", path)
+	}
+
+	return exec.Command("powershell", "-Command", psCommand).Run()
 }
 
 func CheckIsHidden(file os.FileInfo) bool {
