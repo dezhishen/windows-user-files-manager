@@ -30,7 +30,7 @@ func Shutdown(ctx context.Context) {
 	}
 }
 
-func Close(ctx context.Context) bool {
+func BeforeClose(ctx context.Context) bool {
 	for _, app := range binds {
 		app.Close(ctx)
 	}

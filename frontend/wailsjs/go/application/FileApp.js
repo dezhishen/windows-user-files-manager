@@ -34,6 +34,10 @@ export function RemoveAll2Trash(arg1) {
   return window['go']['application']['FileApp']['RemoveAll2Trash'](arg1);
 }
 
+export function Shutdown(arg1) {
+  return window['go']['application']['FileApp']['Shutdown'](arg1);
+}
+
 export function Startup(arg1) {
   return window['go']['application']['FileApp']['Startup'](arg1);
 }

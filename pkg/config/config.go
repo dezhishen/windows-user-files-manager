@@ -18,13 +18,15 @@ var _sync sync.RWMutex
 
 func init() {
 	os.Mkdir("./data", os.ModePerm)
-	_sync.Lock()
-	defer _sync.Unlock()
 	if _db == nil {
-		var err error
-		_db, err = storage.GetDatabase(DefaultConfigPath)
-		if err != nil {
-			panic(err)
+		_sync.Lock()
+		defer _sync.Unlock()
+		if _db == nil {
+			var err error
+			_db, err = storage.GetDatabase(DefaultConfigPath)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }

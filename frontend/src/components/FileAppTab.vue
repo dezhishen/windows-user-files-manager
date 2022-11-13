@@ -28,7 +28,6 @@
                 <el-input v-model="newRootpath.Label" placeholder="请输入名称"></el-input>
             </el-form-item>
         </el-form>
-
         <template #footer>
             <span class="dialog-footer">
                 <el-button @click="newRootpathdialogVisible = false">Cancel</el-button>
@@ -39,11 +38,6 @@
         </template>
     </el-dialog>
     <el-container style="padding:10px">
-        <el-header style="height:20px">
-            <el-row>
-                <el-link :icon="Setting" @click="openSettingDialog()"></el-link>
-            </el-row>
-        </el-header>
         <el-main>
             <el-tabs editable @edit="handleTabsEdit" v-loading="loading" type="card" v-model="activeName">
                 <el-tab-pane v-for="item in fileTabs" :label="item.Label" :name="item.Name">
@@ -55,12 +49,12 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Setting } from '@element-plus/icons-vue'
 import { ElTabPane, ElDialog, ElTabs, TabPaneName } from 'element-plus'
 import FileApp from './FileApp.vue'
 import { OpenDirectoryDialog, GetByRootpaths } from '../../wailsjs/go/application/FileApp'
 import { GetAllValues, PutAllValues } from '../../wailsjs/go/application/ConfigApp'
 import { Settings } from '../types/settings/settings'
+import { EventsOn } from '../../wailsjs/runtime/runtime'
 interface Rootpath {
     Name: string
     Label: string
@@ -98,6 +92,22 @@ const openSettingDialog = () => {
     })
 }
 
+EventsOn(
+    "openSettingDialog",
+    () => {
+        openSettingDialog()
+    }
+)
+
+EventsOn(
+    "openNewRootpathdialog",
+    () => {
+        openNewRootpathdialog()
+    }
+)
+
+
+
 const saveSettings = () => {
     let values = {
         ShowHidden: settings.value.ShowHidden + "",
@@ -116,6 +126,7 @@ const newRootpath = ref<Rootpath>({
     Label: '',
     Rootpath: ''
 })
+
 const newRootpathdialogVisible = ref(false)
 const activeName = ref<string>()
 const fileTabs = ref<Rootpath[]>([])
@@ -138,22 +149,26 @@ const choosePath = () => {
     })
 }
 const doAdd = () => {
-
     if (newRootpath.value.Rootpath == '') {
         return
     }
     fileTabs.value.push(newRootpath.value)
+    activeName.value = newRootpath.value.Rootpath
     newRootpathdialogVisible.value = false
+}
+
+const openNewRootpathdialog = () => {
+    newRootpath.value = {
+        Name: '',
+        Label: '',
+        Rootpath: ''
+    }
+    newRootpathdialogVisible.value = true
 }
 
 const handleTabsEdit = (targetName: TabPaneName | undefined, action: 'remove' | 'add') => {
     if (action === 'add') {
-        newRootpath.value = {
-            Name: '',
-            Label: '',
-            Rootpath: ''
-        }
-        newRootpathdialogVisible.value = true
+        openNewRootpathdialog()
     } else if (action === 'remove') {
         fileTabs.value = fileTabs.value.filter((tab) => tab.Name !== targetName)
         if (activeName.value === targetName) {

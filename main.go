@@ -5,20 +5,21 @@ import (
 	"embed"
 
 	"github.com/dezhishen/windows-user-files-manager/pkg/application"
+	"github.com/dezhishen/windows-user-files-manager/pkg/menus"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
-var fileApp = application.NewFileApp()
 
-func start(ctx context.Context) {
+func startup(ctx context.Context) {
 	application.Startup(ctx)
+	menus.Startup(ctx)
 }
 
-func close(ctx context.Context) bool {
-	return application.Close(ctx)
+func beforeClose(ctx context.Context) bool {
+	return application.BeforeClose(ctx)
 }
 
 func shutdown(ctx context.Context) {
@@ -42,10 +43,11 @@ func main() {
 		Width:         1024,
 		Height:        768,
 		Assets:        assets,
-		OnStartup:     start,
+		OnStartup:     startup,
 		OnShutdown:    shutdown,
-		OnBeforeClose: close,
+		OnBeforeClose: beforeClose,
 		Bind:          getBinds(),
+		Menu:          menus.GetMenu(),
 	})
 
 	if err != nil {

@@ -20,4 +20,6 @@ export function OpenfileByPath(arg1:string):Promise<void>;
 
 export function RemoveAll2Trash(arg1:string):Promise<void>;
 
+export function Shutdown(arg1:context.Context):Promise<void>;
+
 export function Startup(arg1:context.Context):Promise<void>;
